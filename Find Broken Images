@@ -1,0 +1,63 @@
+
+package selenium.herokuapp;
+
+
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.List;
+
+
+public class AddElement {
+    static WebDriverWait wait;
+    static int count=0;
+    public static void main(String[] args) throws Exception {
+        getTheBrokenImages();
+        System.out.print("total no.of broken Links are: " + count);
+
+
+    }
+    public static void getTheBrokenImages() throws Exception  {
+
+        WebDriverManager.chromedriver().setup();
+        WebDriver driver = new ChromeDriver();
+
+        driver.get("https://the-internet.herokuapp.com/broken_images");
+        Thread.sleep(2000);
+
+
+        List< WebElement> imgesSrc =driver.findElements(By.tagName("img"));
+        System.out.println(imgesSrc.size());
+
+        for(WebElement eachImgsrc:imgesSrc){
+            String img = eachImgsrc.getAttribute("src");
+        try {
+            URL url = new URL(img);
+            URLConnection urlConnection = url.openConnection();
+            HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+            httpURLConnection.setConnectTimeout(3000);
+            httpURLConnection.connect();
+
+            if (httpURLConnection.getResponseCode() == 200) {
+                System.out.println(img + ">>" + httpURLConnection.getResponseCode() + ">>" + httpURLConnection.getResponseMessage());
+            } else {
+                System.err.println(img + ">>" + httpURLConnection.getResponseCode() + ">>" + httpURLConnection.getResponseMessage());
+                count++;
+            }
+            httpURLConnection.disconnect();
+        }catch (Exception e){
+            System.out.println("");
+        }
+        }
+
+    }
+
+
+}
